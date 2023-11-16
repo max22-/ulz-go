@@ -5,7 +5,6 @@ import (
 	"errors"
 	"fmt"
 	"io"
-	"log"
 	"os"
 )
 
@@ -16,23 +15,29 @@ func main() {
 	}
 	input, err := os.Open(os.Args[1])
 	if err != nil {
-		log.Fatal(err)
+		fmt.Fprintln(os.Stderr, err)
+		return
 	}
 	defer input.Close()
 	output, err := os.Create(os.Args[2])
 	if err != nil {
-		log.Fatal(err)
+		fmt.Fprintln(os.Stderr, err)
+		return
 	}
 
 	decoded, err := decode(bufio.NewReader(input))
 	if err != nil {
 		output.Close()
 		os.Remove(os.Args[2])
-		log.Fatal(err)
+		fmt.Fprintln(os.Stderr, err)
+		return
 	}
 	n, err := output.Write(decoded)
 	if err != nil {
-		log.Fatal(err)
+		output.Close()
+		os.Remove(os.Args[2])
+		fmt.Fprintln(os.Stderr, err)
+		return
 	} else if n != len(decoded) {
 		fmt.Fprintln(os.Stderr, "failed to write output file")
 	}
